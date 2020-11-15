@@ -1,0 +1,31 @@
+server:
+  port: ${PORT:2789}
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQL95Dialect
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:analyzer}?currentSchema=${DB_SCHEMA:public}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  flyway:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:analyzer}
+    user: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    schemas: ${DB_SCHEMA:public}
+
+analyzer:
+  database:
+    url: jdbc:postgresql://${ANALYZER_DB_HOST:localhost}:${ANALYZER_DB_PORT:5432}/${ANALYZER_DB_NAME:analyzer}?currentSchema=${ANALYZER_DB_SCHEMA:public}
+    username: ${ANALYZER_DB_USER:postgres}
+    password: ${ANALYZER_DB_PASSWORD:postgres}
+
+management:
+  endpoint:
+    metrics:
+      enabled: true

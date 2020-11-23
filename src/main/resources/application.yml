@@ -18,12 +18,15 @@ spring:
     user: ${DB_USER:postgres}
     password: ${DB_PASSWORD:postgres}
     schemas: ${DB_SCHEMA:public}
+  # try
+  # second-datasource:
 
 analyzer:
-  database:
+  datasource:
     url: jdbc:postgresql://${ANALYZER_DB_HOST:localhost}:${ANALYZER_DB_PORT:5432}/${ANALYZER_DB_NAME:analyzer}?currentSchema=${ANALYZER_DB_SCHEMA:public}
     username: ${ANALYZER_DB_USER:postgres}
     password: ${ANALYZER_DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
 
 management:
   endpoint:

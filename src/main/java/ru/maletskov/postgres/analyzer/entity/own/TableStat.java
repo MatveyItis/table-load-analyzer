@@ -21,7 +21,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class TableStat {
 
     @Id
-    @Column(name = "main_stat")
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

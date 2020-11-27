@@ -1,15 +1,21 @@
 package ru.maletskov.postgres.analyzer.job;
 
-import org.quartz.DisallowConcurrentExecution;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import ru.maletskov.postgres.analyzer.api.StatisticService;
 
-@DisallowConcurrentExecution
-public class MainStatJob implements Job {
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class MainStatJob {
 
-    @Override
-    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    private final StatisticService statisticService;
 
+    @Scheduled(cron = "${main-stat-job-cron-expression:* * * * * ?}")
+    public void execute() {
+        log.info("Start executing statistic job");
+        statisticService.updateStatistic(statisticService.getAllStatistic());
     }
 }

@@ -8,6 +8,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -15,6 +16,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 @Data
 @Entity
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "main_stat")
@@ -32,28 +34,28 @@ public class TableStat {
     private String tableName;
 
     @Column(name = "init_read_val")
-    private Integer initReadVal;
+    private Long initReadVal;
 
     @Column(name = "read_val")
-    private Integer readVal;
+    private Long readVal;
 
     @Column(name = "init_ins_val")
-    private Integer initInsVal;
+    private Long initInsVal;
 
     @Column(name = "ins_val")
-    private Integer insVal;
+    private Long insVal;
 
     @Column(name = "init_upd_val")
-    private Integer initUpdVal;
+    private Long initUpdVal;
 
     @Column(name = "upd_val")
-    private Integer updVal;
+    private Long updVal;
 
     @Column(name = "init_del_val")
-    private Integer initDelVal;
+    private Long initDelVal;
 
     @Column(name = "del_val")
-    private Integer delVal;
+    private Long delVal;
 
     @CreationTimestamp
     @Column(name = "created", nullable = false, updatable = false)

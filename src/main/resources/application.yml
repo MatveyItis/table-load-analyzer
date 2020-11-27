@@ -23,10 +23,12 @@ spring:
 
 analyzer:
   datasource:
-    url: jdbc:postgresql://${ANALYZER_DB_HOST:localhost}:${ANALYZER_DB_PORT:5432}/${ANALYZER_DB_NAME:analyzer}?currentSchema=${ANALYZER_DB_SCHEMA:public}
+    url: jdbc:postgresql://${ANALYZER_DB_HOST:localhost}:${ANALYZER_DB_PORT:5432}/${ANALYZER_DB_NAME:analyzer}?currentSchema=pg_catalog
     username: ${ANALYZER_DB_USER:postgres}
     password: ${ANALYZER_DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
+
+main-stat-job-cron-expression: "0/1 * * * * ?"
 
 management:
   endpoint:

@@ -9,7 +9,8 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQL95Dialect
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:analyzer}?currentSchema=${DB_SCHEMA:public}
+    # настройки для базы данных в которую будет писать сам сервис
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:analyzer}
     username: ${DB_USER:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
@@ -21,6 +22,7 @@ spring:
   # try
   # second-datasource:
 
+# настройки для базы данных, из которой нужно собирать статистику
 analyzer:
   datasource:
     url: jdbc:postgresql://${ANALYZER_DB_HOST:localhost}:${ANALYZER_DB_PORT:5432}/${ANALYZER_DB_NAME:analyzer}?currentSchema=pg_catalog

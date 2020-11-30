@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.maletskov.postgres.analyzer.api.StatisticService;
 import ru.maletskov.postgres.analyzer.entity.analyzer.StatIoView;
 import ru.maletskov.postgres.analyzer.entity.own.TableStat;
+import ru.maletskov.postgres.analyzer.mapper.TableStatMapper;
 import ru.maletskov.postgres.analyzer.repository.analyzer.StatIoViewRepository;
 import ru.maletskov.postgres.analyzer.repository.own.TableStatRepository;
 
@@ -21,6 +22,8 @@ public class StatisticServiceImpl implements StatisticService {
     private final StatIoViewRepository statIoViewRepository;
 
     private final TableStatRepository tableStatRepository;
+
+    private final TableStatMapper tableStatMapper;
 
     @Override
     @Transactional("analyzerTransactionManager")
@@ -35,19 +38,7 @@ public class StatisticServiceImpl implements StatisticService {
         if (tableStats.isEmpty()) {
             List<TableStat> newStats = new ArrayList<>();
             for (StatIoView stat : stats) {
-                //todo mapper
-                TableStat tableStat = TableStat.builder()
-                        .tableName(stat.getRelname())
-                        .schemaName(stat.getSchemaname())
-                        .initReadVal(stat.getSeqScan())
-                        .readVal(0L)
-                        .initDelVal(stat.getNTupDel())
-                        .delVal(0L)
-                        .initInsVal(stat.getNTupIns())
-                        .insVal(0L)
-                        .initUpdVal(stat.getNTupUpd())
-                        .updVal(0L)
-                        .build();
+                TableStat tableStat = tableStatMapper.toInitTableStat(stat);
                 newStats.add(tableStat);
             }
             tableStatRepository.saveAll(newStats);

@@ -16,7 +16,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 @Data
 @Entity
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "main_stat")

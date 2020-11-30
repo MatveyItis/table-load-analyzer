@@ -9,8 +9,8 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>ru.maletskov.postgres.analyzer</groupId>
-    <artifactId>ru.maletskov.postgres</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>table-analyzer</artifactId>
+    <version>0.0.1</version>
     <name>table-analyzer</name>
     <description>Postgres table analyzer</description>
 

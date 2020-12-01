@@ -16,6 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 2,
+  "iteration": 1606814615014,
   "links": [],
   "panels": [
     {
@@ -87,7 +88,7 @@
           "group": [],
           "metricColumn": "table_name",
           "rawQuery": true,
-          "rawSql": "SELECT\n  created AS \"time\",\n  table_name AS metric,\n  avg(read_val) as \"avg\"\nFROM main_stat\nWHERE\n  $__timeFilter(created)\ngroup by created,2\nORDER BY 1,2",
+          "rawSql": "SELECT\n  created AS \"time\",\n  table_name AS metric,\n  avg(read_val) as \"avg\"\nFROM main_stat\nWHERE\n  $__timeFilter(created) and schema_name = '$schema_name'\ngroup by created,2\nORDER BY 1,2",
           "refId": "A",
           "select": [
             [
@@ -223,7 +224,7 @@
           ],
           "metricColumn": "table_name",
           "rawQuery": true,
-          "rawSql": "SELECT\n  $__timeGroupAlias(created,$__interval),\n  table_name AS metric,\n  avg(upd_val) AS \"upd_val\"\nFROM main_stat\nWHERE\n  $__timeFilter(created)\nGROUP BY created,2\nORDER BY 1,2",
+          "rawSql": "SELECT\n  $__timeGroupAlias(created,$__interval),\n  table_name AS metric,\n  avg(upd_val) AS \"upd_val\"\nFROM main_stat\nWHERE\n  $__timeFilter(created) and schema_name = '$schema_name'\nGROUP BY created,2\nORDER BY 1,2",
           "refId": "A",
           "select": [
             [
@@ -351,7 +352,7 @@
           "group": [],
           "metricColumn": "table_name",
           "rawQuery": true,
-          "rawSql": "SELECT\n  created AS \"time\",\n  table_name AS metric,\n  avg(ins_val) as \"avg\"\nFROM main_stat\nWHERE\n  $__timeFilter(created)\n  group by created,2\nORDER BY 1,2",
+          "rawSql": "SELECT\n  created AS \"time\",\n  table_name AS metric,\n  avg(ins_val) as \"avg\"\nFROM main_stat\nWHERE\n  $__timeFilter(created) and schema_name = '$schema_name'\n  group by created,2\nORDER BY 1,2",
           "refId": "A",
           "select": [
             [
@@ -486,8 +487,8 @@
             }
           ],
           "metricColumn": "table_name",
-          "rawQuery": false,
-          "rawSql": "SELECT\n  $__timeGroupAlias(created,$__interval),\n  table_name AS metric,\n  avg(del_val) AS \"del_val\"\nFROM main_stat\nWHERE\n  $__timeFilter(created)\nGROUP BY 1,2\nORDER BY 1,2",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  $__timeGroupAlias(created,$__interval),\n  table_name AS metric,\n  avg(del_val) AS \"del_val\"\nFROM main_stat\nWHERE\n  $__timeFilter(created) and schema_name = '$schema_name'\nGROUP BY created,2\nORDER BY 1,2",
           "refId": "A",
           "select": [
             [
@@ -570,10 +571,37 @@
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "allValue": null,
+        "current": {
+          "selected": false,
+          "text": "public",
+          "value": "public"
+        },
+        "datasource": "PostgreSQL",
+        "definition": "select distinct schema_name from main_stat",
+        "hide": 0,
+        "includeAll": false,
+        "label": "schena_name",
+        "multi": false,
+        "name": "schema_name",
+        "options": [],
+        "query": "select distinct schema_name from main_stat",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-24h",
     "to": "now"
   },
   "timepicker": {
@@ -592,5 +620,5 @@
   "timezone": "utc",
   "title": "PostgreSQL Table Analyzer",
   "uid": "_6Bz5t0Gz",
-  "version": 14
+  "version": 22
 }

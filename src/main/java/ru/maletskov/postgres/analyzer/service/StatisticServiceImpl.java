@@ -19,6 +19,8 @@ import ru.maletskov.postgres.analyzer.repository.own.TableStatRepository;
 @RequiredArgsConstructor
 public class StatisticServiceImpl implements StatisticService {
 
+    private static final String EXCLUDE_TABLE = "main_stat";
+
     private final StatIoViewRepository statIoViewRepository;
 
     private final TableStatRepository tableStatRepository;
@@ -38,12 +40,20 @@ public class StatisticServiceImpl implements StatisticService {
         if (tableStats.isEmpty()) {
             List<TableStat> newStats = new ArrayList<>();
             for (StatIoView stat : stats) {
+                if (stat.getRelname().equals(EXCLUDE_TABLE)) {
+                    continue;
+                }
                 TableStat tableStat = tableStatMapper.toInitTableStat(stat);
                 newStats.add(tableStat);
             }
             tableStatRepository.saveAll(newStats);
+            log.debug("Successfully saved statistic for {} tables", newStats.size());
         } else {
+            List<TableStat> actualTableStats = new ArrayList<>();
             for (StatIoView stat : stats) {
+                if (stat.getRelname().equals(EXCLUDE_TABLE)) {
+                    continue;
+                }
                 TableStat actualTableStat = getTableStat(stat.getSchemaname(), stat.getRelname(), tableStats);
                 if (actualTableStat == null) {
                     continue;
@@ -52,17 +62,16 @@ public class StatisticServiceImpl implements StatisticService {
                 actualTableStat.setDelVal(stat.getNTupDel() - actualTableStat.getInitDelVal());
                 actualTableStat.setUpdVal(stat.getNTupUpd() - actualTableStat.getInitUpdVal());
                 actualTableStat.setInsVal(stat.getNTupIns() - actualTableStat.getInitInsVal());
-                tableStatRepository.save(actualTableStat);
+                actualTableStats.add(actualTableStat);
             }
+            tableStatRepository.saveAll(actualTableStats);
+            log.debug("Successfully updated statistic for {} tables", actualTableStats.size());
         }
     }
 
     private TableStat getTableStat(String schemaName, String tableName, List<TableStat> tableStats) {
-        for (TableStat stat : tableStats) {
-            if (stat.getTableName().equals(tableName) && stat.getSchemaName().equals(schemaName)) {
-                return stat;
-            }
-        }
-        return null;
+        return tableStats.stream()
+                .filter(stat -> stat.getTableName().equals(tableName) && stat.getSchemaName().equals(schemaName))
+                .findFirst().orElse(null);
     }
 }

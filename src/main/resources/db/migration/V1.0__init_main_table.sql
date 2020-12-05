@@ -11,6 +11,6 @@ create table main_stat
     upd_val       bigint,
     init_del_val  bigint,
     del_val       bigint,
-    created       timestamp not null,
-    updated       timestamp not null
+    created       timestamp with time zone not null,
+    updated       timestamp with time zone not null
 );

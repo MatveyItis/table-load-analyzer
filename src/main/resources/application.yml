@@ -1,6 +1,3 @@
-server:
-  port: ${PORT:2789}
-
 spring:
   jpa:
     hibernate:
@@ -8,29 +5,30 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQL95Dialect
+    open-in-view: false
   datasource:
     # настройки для базы данных в которую будет писать сам сервис
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:analyzer}
-    username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:postgres}
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
   flyway:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:analyzer}
-    user: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:postgres}
-    schemas: ${DB_SCHEMA:public}
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    user: ${DB_USER}
+    password: ${DB_PASSWORD}
+    schemas: ${DB_SCHEMA}
   # try
   # second-datasource:
 
 # настройки для базы данных, из которой нужно собирать статистику
 analyzer:
   datasource:
-    url: jdbc:postgresql://${ANALYZER_DB_HOST:localhost}:${ANALYZER_DB_PORT:5432}/${ANALYZER_DB_NAME:analyzer}?currentSchema=pg_catalog
-    username: ${ANALYZER_DB_USER:postgres}
-    password: ${ANALYZER_DB_PASSWORD:postgres}
+    url: jdbc:postgresql://${ANALYZER_DB_HOST}:${ANALYZER_DB_PORT}/${ANALYZER_DB_NAME}?currentSchema=pg_catalog
+    username: ${ANALYZER_DB_USER}
+    password: ${ANALYZER_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
-main-stat-job-cron-expression: "0/1 * * * * ?"
+main-stat-job-cron-expression: "${MAIN_STAT_CRON_JOB:0/20 * * * * ?}"
 
 management:
   endpoint:

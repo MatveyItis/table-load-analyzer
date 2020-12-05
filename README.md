@@ -4,6 +4,7 @@
 - Java 11
 - Maven
 - PostgreSQL
+- Grafana
 
 ## Properties
 ```properties

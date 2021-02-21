@@ -11,6 +11,8 @@ public interface TableStatRepository extends JpaRepository<TableStat, Long> {
     @Query(value = "select * from main_stat where created > :time", nativeQuery = true)
     List<TableStat> findAllByCreated(LocalDateTime time);
 
+    List<TableStat> findAllByTableNameAndSchemaName(String table, String schema);
+
 /*    @Query(value = "select schema_name, " +
             "       table_name, " +
             "       sum(read_val) as read_val, " +

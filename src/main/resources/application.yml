@@ -28,7 +28,7 @@ analyzer:
     password: ${ANALYZER_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
-main-stat-job-cron-expression: "${MAIN_STAT_CRON_JOB:0/20 * * * * ?}"
+main-stat-job-cron-expression: "${MAIN_STAT_CRON_JOB:0 * * * * ?}"
 
 management:
   endpoint:

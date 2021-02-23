@@ -1,12 +1,14 @@
 package ru.maletskov.postgres.analyzer.controller;
 
 import java.time.LocalDateTime;
+import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.maletskov.postgres.analyzer.api.StatisticsService;
+import ru.maletskov.postgres.analyzer.dto.DataContentDto;
 import ru.maletskov.postgres.analyzer.dto.FileType;
 import ru.maletskov.postgres.analyzer.dto.QueryType;
 import ru.maletskov.postgres.analyzer.dto.StatisticFilter;
@@ -17,16 +19,16 @@ public class StatisticsController {
 
     private final StatisticsService statisticService;
 
-    //todo doesn't work now with text/csv type
     @SneakyThrows
-    @GetMapping(value = "/statistics/file.csv", produces = "text/csv")
-    public byte[] getFileWithStat(@RequestParam(required = false) LocalDateTime startDateTime,
-                                  @RequestParam(required = false) LocalDateTime endDateTime,
-                                  @RequestParam String table,
-                                  @RequestParam String schema,
-                                  @RequestParam QueryType queryType,
-                                  @RequestParam FileType fileType) {
-        return statisticService.getFileWithStatistics(
+    @GetMapping(value = "/statistics/file.csv")
+    public void getFileWithStat(HttpServletResponse response,
+                                @RequestParam(required = false) LocalDateTime startDateTime,
+                                @RequestParam(required = false) LocalDateTime endDateTime,
+                                @RequestParam String table,
+                                @RequestParam String schema,
+                                @RequestParam QueryType queryType,
+                                @RequestParam FileType fileType) {
+        DataContentDto contentDto = statisticService.getFileWithStatistics(
                 StatisticFilter.builder()
                         .startDateTime(startDateTime)
                         .endDateTime(endDateTime)
@@ -36,5 +38,10 @@ public class StatisticsController {
                         .queryType(queryType)
                         .build()
         );
+        String headerKey = "Content-Disposition";
+        String headerValue = String.format("attachment; filename=\"%s\"", contentDto.getFileName());
+        response.setHeader(headerKey, headerValue);
+        response.setContentType("text/csv;charset=UTF-8");
+        response.getWriter().write(contentDto.getContent());
     }
 }

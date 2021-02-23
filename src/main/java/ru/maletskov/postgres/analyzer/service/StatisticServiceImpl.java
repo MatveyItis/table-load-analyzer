@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.maletskov.postgres.analyzer.api.StatisticsService;
+import ru.maletskov.postgres.analyzer.dto.DataContentDto;
 import ru.maletskov.postgres.analyzer.dto.QueryType;
 import ru.maletskov.postgres.analyzer.dto.StatisticFilter;
 import ru.maletskov.postgres.analyzer.entity.analyzer.StatIoView;
@@ -77,7 +78,7 @@ public class StatisticServiceImpl implements StatisticsService {
     @Override
     @SneakyThrows
     @Transactional("ownTransactionManager")
-    public byte[] getFileWithStatistics(StatisticFilter statFilter) {
+    public DataContentDto getFileWithStatistics(StatisticFilter statFilter) {
         //todo checks if table or schema exists
         List<TableStat> listStat = tableStatRepository.findAllByTableNameAndSchemaName(statFilter.getTable(), statFilter.getSchema());
         List<String[]> dataLines = new ArrayList<>();
@@ -92,7 +93,11 @@ public class StatisticServiceImpl implements StatisticsService {
         StringBuilder sb = new StringBuilder();
         sb.append("value,time\n");
         dataLines.forEach(d -> sb.append(convertToCSV(d)).append("\n"));
-        return sb.toString().getBytes();
+        String fileName = statFilter.getSchema() + "__" + statFilter.getTable() + ".csv";
+        return DataContentDto.builder()
+                .fileName(fileName)
+                .content(sb.toString())
+                .build();
     }
 
     public String convertToCSV(String[] data) {

@@ -42,20 +42,23 @@ public class StatisticServiceImpl implements StatisticsService {
     @Override
     @Transactional("ownTransactionManager")
     public void updateStatistics(List<StatIoView> stats) {
-        List<TableStat> tableStats = tableStatRepository.findAllByCreated(LocalDateTime.now().minusMinutes(1));
+        List<TableStat> tableStats = tableStatRepository.findAllByLastCreated();
         if (tableStats.isEmpty()) {
             List<TableStat> newStats = new ArrayList<>();
+            LocalDateTime created = LocalDateTime.now();
             for (StatIoView stat : stats) {
                 if (stat.getRelname().equals(EXCLUDE_TABLE)) {
                     continue;
                 }
                 TableStat tableStat = tableStatMapper.toInitTableStat(stat);
+                tableStat.setCreated(created);
                 newStats.add(tableStat);
             }
             tableStatRepository.saveAll(newStats);
             log.debug("Successfully saved statistic for {} tables", newStats.size());
         } else {
             List<TableStat> actualTableStats = new ArrayList<>();
+            LocalDateTime created = LocalDateTime.now();
             for (StatIoView stat : stats) {
                 if (stat.getRelname().equals(EXCLUDE_TABLE)) {
                     continue;
@@ -68,6 +71,7 @@ public class StatisticServiceImpl implements StatisticsService {
                 actualTableStat.setDelVal(stat.getNTupDel() - actualTableStat.getInitDelVal());
                 actualTableStat.setUpdVal(stat.getNTupUpd() - actualTableStat.getInitUpdVal());
                 actualTableStat.setInsVal(stat.getNTupIns() - actualTableStat.getInitInsVal());
+                actualTableStat.setCreated(created);
                 actualTableStats.add(actualTableStat);
             }
             tableStatRepository.saveAll(actualTableStats);

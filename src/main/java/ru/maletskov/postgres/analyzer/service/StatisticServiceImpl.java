@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.maletskov.postgres.analyzer.api.StatisticsService;
@@ -67,10 +69,15 @@ public class StatisticServiceImpl implements StatisticsService {
                 if (actualTableStat == null) {
                     continue;
                 }
+                //todo move to mapper
                 actualTableStat.setReadVal(stat.getSeqScan() - actualTableStat.getInitReadVal());
                 actualTableStat.setDelVal(stat.getNTupDel() - actualTableStat.getInitDelVal());
                 actualTableStat.setUpdVal(stat.getNTupUpd() - actualTableStat.getInitUpdVal());
                 actualTableStat.setInsVal(stat.getNTupIns() - actualTableStat.getInitInsVal());
+                actualTableStat.setInitReadVal(stat.getSeqScan());
+                actualTableStat.setInitDelVal(stat.getNTupDel());
+                actualTableStat.setInitUpdVal(stat.getNTupUpd());
+                actualTableStat.setInitInsVal(stat.getNTupIns());
                 actualTableStat.setCreated(created);
                 actualTableStats.add(actualTableStat);
             }
@@ -83,34 +90,42 @@ public class StatisticServiceImpl implements StatisticsService {
     @SneakyThrows
     @Transactional("ownTransactionManager")
     public DataContentDto getFileWithStatistics(StatisticFilter statFilter) {
-        //todo checks if table or schema exists
-        List<TableStat> listStat = tableStatRepository.findAllByTableNameAndSchemaName(statFilter.getTable(), statFilter.getSchema());
+        String tableName = statFilter.getTable();
+        String schemaName = statFilter.getSchema();
+        if (!tableStatRepository.existsByTableNameAndSchemaName(tableName, schemaName)) {
+            throw new EntityNotFoundException("Rows are not found by table = " + tableName + " and schema = " + schemaName);
+        }
+        List<TableStat> listStat = tableStatRepository.findAllByTableNameAndSchemaName(tableName, schemaName);
         List<String[]> dataLines = new ArrayList<>();
-        listStat.forEach(s -> {
-            if (statFilter.getQueryType().equals(QueryType.SELECT)) {
-                dataLines.add(new String[]{s.getReadVal().toString(), s.getCreated().toString()});
-            } else if (statFilter.getQueryType().equals(QueryType.INSERT)) {
-                dataLines.add(new String[]{s.getInsVal().toString(), s.getCreated().toString()});
-            }
-            //todo
-        });
+        QueryType queryType = statFilter.getQueryType();
+        listStat.forEach(s -> dataLines.add(new String[]{getNeededValue(s, queryType), s.getCreated().toString()}));
         StringBuilder sb = new StringBuilder();
         sb.append("value,time\n");
         dataLines.forEach(d -> sb.append(convertToCSV(d)).append("\n"));
-        String fileName = statFilter.getSchema() + "__" + statFilter.getTable() + ".csv";
-        return DataContentDto.builder()
-                .fileName(fileName)
-                .content(sb.toString())
-                .build();
+        String fileName = schemaName + "__" + tableName + ".csv";
+        return DataContentDto.builder().fileName(fileName).content(sb.toString()).build();
     }
 
-    public String convertToCSV(String[] data) {
+    private String getNeededValue(TableStat tableStat, QueryType queryType) {
+        switch (queryType) {
+            case DELETE:
+                return tableStat.getDelVal().toString();
+            case INSERT:
+                return tableStat.getInsVal().toString();
+            case UPDATE:
+                return tableStat.getUpdVal().toString();
+            default:
+                return tableStat.getReadVal().toString();
+        }
+    }
+
+    private String convertToCSV(String[] data) {
         return Stream.of(data)
                 .map(this::escapeSpecialCharacters)
                 .collect(Collectors.joining(","));
     }
 
-    public String escapeSpecialCharacters(String data) {
+    private String escapeSpecialCharacters(String data) {
         String escapedData = data.replaceAll("\\R", " ");
         if (data.contains(",") || data.contains("\"") || data.contains("'")) {
             data = data.replace("\"", "\"\"");
@@ -122,6 +137,14 @@ public class StatisticServiceImpl implements StatisticsService {
     private TableStat getTableStat(String schemaName, String tableName, List<TableStat> tableStats) {
         return tableStats.stream()
                 .filter(stat -> stat.getTableName().equals(tableName) && stat.getSchemaName().equals(schemaName))
+                .map(s -> {
+                    TableStat ts = new TableStat();
+                    BeanUtils.copyProperties(s, ts);
+                    ts.setId(null);
+                    ts.setCreated(null);
+                    ts.setUpdated(null);
+                    return ts;
+                })
                 .findFirst().orElse(null);
     }
 }

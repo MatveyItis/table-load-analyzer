@@ -13,6 +13,8 @@ public interface TableStatRepository extends JpaRepository<TableStat, Long> {
 
     List<TableStat> findAllByTableNameAndSchemaName(String table, String schema);
 
+    boolean existsByTableNameAndSchemaName(String table, String schema);
+
 /*    @Query(value = "select schema_name, " +
             "       table_name, " +
             "       sum(read_val) as read_val, " +

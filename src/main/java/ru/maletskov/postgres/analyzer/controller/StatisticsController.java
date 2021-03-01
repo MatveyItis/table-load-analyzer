@@ -20,7 +20,7 @@ public class StatisticsController {
     private final StatisticsService statisticService;
 
     @SneakyThrows
-    @GetMapping(value = "/statistics/file.csv")
+    @GetMapping(value = "/statistics/file")
     public void getFileWithStat(HttpServletResponse response,
                                 @RequestParam(required = false) LocalDateTime startDateTime,
                                 @RequestParam(required = false) LocalDateTime endDateTime,

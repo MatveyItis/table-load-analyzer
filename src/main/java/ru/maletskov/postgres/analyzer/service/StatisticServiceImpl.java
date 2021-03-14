@@ -1,11 +1,11 @@
 package ru.maletskov.postgres.analyzer.service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,9 @@ import ru.maletskov.postgres.analyzer.repository.own.TableStatRepository;
 @RequiredArgsConstructor
 public class StatisticServiceImpl implements StatisticsService {
 
-    private static final String EXCLUDE_TABLE = "main_stat";
+    public static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
+    public static final String EXCLUDE_TABLE = "main_stat";
+    public static final int MINUTE_PERIOD_BETWEEN_VALUES = 1;
 
     private final StatIoViewRepository statIoViewRepository;
 
@@ -90,20 +92,38 @@ public class StatisticServiceImpl implements StatisticsService {
     @SneakyThrows
     @Transactional("ownTransactionManager")
     public DataContentDto getFileWithStatistics(StatisticFilter statFilter) {
-        String tableName = statFilter.getTable();
-        String schemaName = statFilter.getSchema();
-        if (!tableStatRepository.existsByTableNameAndSchemaName(tableName, schemaName)) {
-            throw new EntityNotFoundException("Rows are not found by table = " + tableName + " and schema = " + schemaName);
+        var listStat = findAllByFilter(statFilter);
+        if (listStat.isEmpty()) {
+            //todo think about what the response should be
+            return DataContentDto.builder().content("").build();
         }
-        List<TableStat> listStat = tableStatRepository.findAllByTableNameAndSchemaName(tableName, schemaName);
+        var isDataNormalized = isDataNormalized(listStat);
+        if (!isDataNormalized) {
+            //todo
+            normalizeData(listStat);
+        }
         List<String[]> dataLines = new ArrayList<>();
-        QueryType queryType = statFilter.getQueryType();
-        listStat.forEach(s -> dataLines.add(new String[]{getNeededValue(s, queryType), s.getCreated().toString()}));
-        StringBuilder sb = new StringBuilder();
-        sb.append("value,time\n");
+        var queryType = statFilter.getQueryType();
+        listStat.forEach(s -> dataLines.add(new String[]{
+                getNeededValue(s, queryType),
+                s.getCreated().format(DateTimeFormatter.ofPattern(DATE_PATTERN))
+        }));
+        var sb = new StringBuilder();
         dataLines.forEach(d -> sb.append(convertToCSV(d)).append("\n"));
-        String fileName = schemaName + "__" + tableName + ".csv";
+        var fileName = statFilter.getSchema() + "__" + statFilter.getTable() + ".csv";
         return DataContentDto.builder().fileName(fileName).content(sb.toString()).build();
+    }
+
+    @Transactional("ownTransactionManager")
+    public List<TableStat> findAllByFilter(StatisticFilter filter) {
+        String table = filter.getTable();
+        String schema = filter.getSchema();
+        LocalDateTime startDate = filter.getStartDateTime();
+        LocalDateTime endDate = filter.getEndDateTime();
+        if (startDate == null || endDate == null) {
+            return tableStatRepository.findAllBy(table, schema);
+        }
+        return tableStatRepository.findAllBy(table, schema, startDate, endDate);
     }
 
     private String getNeededValue(TableStat tableStat, QueryType queryType) {
@@ -146,5 +166,20 @@ public class StatisticServiceImpl implements StatisticsService {
                     return ts;
                 })
                 .findFirst().orElse(null);
+    }
+
+    private boolean isDataNormalized(List<TableStat> stats) {
+        for (int i = 1; i < stats.size(); i++) {
+            var created = stats.get(i).getCreated();
+            var prevCreated = stats.get(i - 1).getCreated();
+            if (created.getMinute() - prevCreated.getMinute() > MINUTE_PERIOD_BETWEEN_VALUES) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private void normalizeData(List<TableStat> stats) {
+
     }
 }

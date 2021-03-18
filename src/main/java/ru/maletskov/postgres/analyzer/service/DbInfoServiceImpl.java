@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,5 +46,23 @@ public class DbInfoServiceImpl implements DbInfoService {
         return DbInfoDto.builder()
                 .schemas(schemas)
                 .build();
+    }
+
+    @Override
+    @Transactional("analyzerTransactionManager")
+    public Set<String> getSchemas() {
+        return statIoViewRepository.findAll()
+                .stream()
+                .map(StatIoView::getSchemaname)
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    @Transactional("analyzerTransactionManager")
+    public Set<String> getTables(String schema) {
+        return statIoViewRepository.findDistinctBySchemaname(schema)
+                .stream()
+                .map(StatIoView::getRelname)
+                .collect(Collectors.toSet());
     }
 }

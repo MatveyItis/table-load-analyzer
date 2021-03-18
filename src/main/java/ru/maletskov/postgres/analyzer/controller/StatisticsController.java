@@ -1,10 +1,12 @@
 package ru.maletskov.postgres.analyzer.controller;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.maletskov.postgres.analyzer.api.DbInfoService;
@@ -52,5 +54,15 @@ public class StatisticsController {
     @GetMapping("/database/info")
     public DbInfoDto getDbInfo() {
         return dbInfoService.getDbInfo();
+    }
+
+    @GetMapping("/database/schema")
+    public Set<String> getSchemas() {
+        return dbInfoService.getSchemas();
+    }
+
+    @GetMapping("/database/schema/{schemaName}")
+    public Set<String> getTables(@PathVariable String schemaName) {
+        return dbInfoService.getTables(schemaName);
     }
 }

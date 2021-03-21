@@ -3,6 +3,7 @@ package ru.maletskov.postgres.analyzer.service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -71,16 +72,7 @@ public class StatisticServiceImpl implements StatisticsService {
                 if (actualTableStat == null) {
                     continue;
                 }
-                //todo move to mapper
-                actualTableStat.setReadVal(stat.getSeqScan() - actualTableStat.getInitReadVal());
-                actualTableStat.setDelVal(stat.getNTupDel() - actualTableStat.getInitDelVal());
-                actualTableStat.setUpdVal(stat.getNTupUpd() - actualTableStat.getInitUpdVal());
-                actualTableStat.setInsVal(stat.getNTupIns() - actualTableStat.getInitInsVal());
-                actualTableStat.setInitReadVal(stat.getSeqScan());
-                actualTableStat.setInitDelVal(stat.getNTupDel());
-                actualTableStat.setInitUpdVal(stat.getNTupUpd());
-                actualTableStat.setInitInsVal(stat.getNTupIns());
-                actualTableStat.setCreated(created);
+                tableStatMapper.updateTableStat(actualTableStat, stat, created);
                 actualTableStats.add(actualTableStat);
             }
             tableStatRepository.saveAll(actualTableStats);
@@ -99,16 +91,16 @@ public class StatisticServiceImpl implements StatisticsService {
         }
         var isDataNormalized = isDataNormalized(listStat);
         if (!isDataNormalized) {
-            //todo
             normalizeData(listStat);
         }
         List<String[]> dataLines = new ArrayList<>();
         var queryType = statFilter.getQueryType();
         listStat.forEach(s -> dataLines.add(new String[]{
-                getNeededValue(s, queryType),
-                s.getCreated().format(DateTimeFormatter.ofPattern(DATE_PATTERN))
+                s.getCreated().format(DateTimeFormatter.ofPattern(DATE_PATTERN)),
+                getNeededValue(s, queryType)
         }));
         var sb = new StringBuilder();
+        sb.append("time,value\n");
         dataLines.forEach(d -> sb.append(convertToCSV(d)).append("\n"));
         var fileName = statFilter.getSchema() + "__" + statFilter.getTable() + ".csv";
         return DataContentDto.builder().fileName(fileName).content(sb.toString()).build();
@@ -120,10 +112,15 @@ public class StatisticServiceImpl implements StatisticsService {
         String schema = filter.getSchema();
         LocalDateTime startDate = filter.getStartDateTime();
         LocalDateTime endDate = filter.getEndDateTime();
-        if (startDate == null || endDate == null) {
+        if (startDate != null && endDate != null) {
+            return tableStatRepository.findAllBy(table, schema, startDate, endDate);
+        } else if (startDate != null) {
+            return tableStatRepository.findAllByStartDate(table, schema, startDate);
+        } else if (endDate != null) {
+            return tableStatRepository.findAllByEndDate(table, schema, endDate);
+        } else {
             return tableStatRepository.findAllBy(table, schema);
         }
-        return tableStatRepository.findAllBy(table, schema, startDate, endDate);
     }
 
     private String getNeededValue(TableStat tableStat, QueryType queryType) {
@@ -179,7 +176,24 @@ public class StatisticServiceImpl implements StatisticsService {
         return false;
     }
 
-    private void normalizeData(List<TableStat> stats) {
+    private List<TableStat> normalizeData(List<TableStat> stats) {
+        List<TableStat> tableStats = new LinkedList<>();
+        LocalDateTime prevCreated = stats.get(0).getCreated();
+        tableStats.add(stats.get(0));
+        for (int i = 1; i < stats.size(); i++) {
+            TableStat currentStat = stats.get(i);
+            int minuteDifference = currentStat.getCreated().getMinute() - prevCreated.getMinute();
+            if (minuteDifference > MINUTE_PERIOD_BETWEEN_VALUES) {
+
+            } else {
+                tableStats.add(currentStat);
+            }
+            prevCreated = currentStat.getCreated();
+        }
+        return tableStats;
+    }
+
+    private void fillDataUsingMeaning(List<TableStat> tableStats) {
 
     }
 }

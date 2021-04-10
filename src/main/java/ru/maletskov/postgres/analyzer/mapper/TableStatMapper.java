@@ -12,7 +12,7 @@ import ru.maletskov.postgres.analyzer.entity.own.TableStat;
         componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE
 )
-public abstract class TableStatMapper {
+public interface TableStatMapper {
 
     @Mapping(target = "tableName", source = "relname")
     @Mapping(target = "schemaName", source = "schemaname")
@@ -24,9 +24,9 @@ public abstract class TableStatMapper {
     @Mapping(target = "insVal", expression = "java(0L)")
     @Mapping(target = "initUpdVal", source = "NTupUpd")
     @Mapping(target = "updVal", expression = "java(0L)")
-    public abstract TableStat toInitTableStat(StatIoView statIoView);
+    TableStat toInitTableStat(StatIoView statIoView);
 
-    public void updateTableStat(@MappingTarget TableStat actual, StatIoView stat, LocalDateTime created) {
+    default void updateTableStat(@MappingTarget TableStat actual, StatIoView stat, LocalDateTime created) {
         actual.setReadVal(stat.getSeqScan() - actual.getInitReadVal());
         actual.setDelVal(stat.getNTupDel() - actual.getInitDelVal());
         actual.setUpdVal(stat.getNTupUpd() - actual.getInitUpdVal());

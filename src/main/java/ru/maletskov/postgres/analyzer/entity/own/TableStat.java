@@ -1,5 +1,6 @@
 package ru.maletskov.postgres.analyzer.entity.own;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -17,7 +18,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "main_stat")
-public class TableStat {
+public class TableStat implements Serializable {
 
     @Id
     @Column(name = "id")

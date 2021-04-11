@@ -18,6 +18,8 @@ import ru.maletskov.postgres.analyzer.repository.analyzer.StatIoViewRepository;
 @RequiredArgsConstructor
 public class DbInfoServiceImpl implements DbInfoService {
 
+    public static final String IGNORE_TABLE = "main_stat";
+
     private final StatIoViewRepository statIoViewRepository;
 
     @Override
@@ -63,6 +65,7 @@ public class DbInfoServiceImpl implements DbInfoService {
         return statIoViewRepository.findDistinctBySchemaname(schema)
                 .stream()
                 .map(StatIoView::getRelname)
+                .filter(relname -> !relname.equals(IGNORE_TABLE))
                 .collect(Collectors.toSet());
     }
 }

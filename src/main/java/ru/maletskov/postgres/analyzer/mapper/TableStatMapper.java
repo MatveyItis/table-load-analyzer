@@ -16,7 +16,7 @@ public interface TableStatMapper {
 
     @Mapping(target = "tableName", source = "relname")
     @Mapping(target = "schemaName", source = "schemaname")
-    @Mapping(target = "initReadVal", source = "seqScan")
+    @Mapping(target = "initReadVal", expression = "java(statIoView.getSeqScan() + statIoView.getIdxScan())")
     @Mapping(target = "readVal", expression = "java(0L)")
     @Mapping(target = "initDelVal", source = "NTupDel")
     @Mapping(target = "delVal", expression = "java(0L)")
@@ -27,14 +27,18 @@ public interface TableStatMapper {
     TableStat toInitTableStat(StatIoView statIoView);
 
     default void updateTableStat(@MappingTarget TableStat actual, StatIoView stat, LocalDateTime created) {
-        actual.setReadVal(stat.getSeqScan() - actual.getInitReadVal());
+        actual.setReadVal((resolveNotNull(stat.getSeqScan()) + resolveNotNull(stat.getIdxScan())) - actual.getInitReadVal());
         actual.setDelVal(stat.getNTupDel() - actual.getInitDelVal());
         actual.setUpdVal(stat.getNTupUpd() - actual.getInitUpdVal());
         actual.setInsVal(stat.getNTupIns() - actual.getInitInsVal());
-        actual.setInitReadVal(stat.getSeqScan());
+        actual.setInitReadVal(resolveNotNull(stat.getSeqScan()) + resolveNotNull(stat.getIdxScan()));
         actual.setInitDelVal(stat.getNTupDel());
         actual.setInitUpdVal(stat.getNTupUpd());
         actual.setInitInsVal(stat.getNTupIns());
         actual.setCreated(created);
+    }
+
+    default Long resolveNotNull(Long number) {
+        return number == null ? 0L : number;
     }
 }

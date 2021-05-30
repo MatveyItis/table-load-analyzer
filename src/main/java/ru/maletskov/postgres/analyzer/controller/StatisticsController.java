@@ -1,10 +1,12 @@
 package ru.maletskov.postgres.analyzer.controller;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,7 +18,9 @@ import ru.maletskov.postgres.analyzer.dto.DbInfoDto;
 import ru.maletskov.postgres.analyzer.dto.FileType;
 import ru.maletskov.postgres.analyzer.dto.QueryType;
 import ru.maletskov.postgres.analyzer.dto.StatisticFilter;
+import springfox.documentation.annotations.ApiIgnore;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class StatisticsController {
@@ -28,16 +32,14 @@ public class StatisticsController {
     @SneakyThrows
     @GetMapping("/statistics/file")
     public void getFileWithStat(HttpServletResponse response,
-                                @RequestParam(required = false) LocalDateTime startDateTime,
-                                @RequestParam(required = false) LocalDateTime endDateTime,
                                 @RequestParam String table,
                                 @RequestParam String schema,
                                 @RequestParam QueryType queryType,
+                                @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                                 @RequestParam FileType fileType) {
         DataContentDto contentDto = statisticService.getFileWithStatistics(
                 StatisticFilter.builder()
-                        .startDateTime(startDateTime)
-                        .endDateTime(endDateTime)
+                        .startDate(startDate)
                         .fileType(fileType)
                         .schema(schema)
                         .table(table)
@@ -51,6 +53,7 @@ public class StatisticsController {
         response.getWriter().write(contentDto.getContent());
     }
 
+    @ApiIgnore
     @GetMapping("/database/info")
     public DbInfoDto getDbInfo() {
         return dbInfoService.getDbInfo();

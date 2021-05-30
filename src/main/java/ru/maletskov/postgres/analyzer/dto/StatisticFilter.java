@@ -1,6 +1,6 @@
 package ru.maletskov.postgres.analyzer.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,9 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class StatisticFilter {
 
-    private LocalDateTime startDateTime;
-
-    private LocalDateTime endDateTime;
+    private LocalDate startDate;
 
     private String table;
 

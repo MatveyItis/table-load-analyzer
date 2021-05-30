@@ -1,5 +1,6 @@
 package ru.maletskov.postgres.analyzer.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -90,9 +91,9 @@ public class StatisticServiceImpl implements StatisticsService {
             return DataContentDto.builder().content("").build();
         }
         var isDataNormalized = isDataNormalized(listStat);
-        if (!isDataNormalized) {
+        /*if (!isDataNormalized) {
             normalizeData(listStat);
-        }
+        }*/
         List<String[]> dataLines = new ArrayList<>();
         var queryType = statFilter.getQueryType();
         listStat.forEach(s -> dataLines.add(new String[]{
@@ -110,17 +111,11 @@ public class StatisticServiceImpl implements StatisticsService {
     public List<TableStat> findAllByFilter(StatisticFilter filter) {
         String table = filter.getTable();
         String schema = filter.getSchema();
-        LocalDateTime startDate = filter.getStartDateTime();
-        LocalDateTime endDate = filter.getEndDateTime();
-        if (startDate != null && endDate != null) {
-            return tableStatRepository.findAllBy(table, schema, startDate, endDate);
-        } else if (startDate != null) {
+        LocalDate startDate = filter.getStartDate();
+        if (startDate != null) {
             return tableStatRepository.findAllByStartDate(table, schema, startDate);
-        } else if (endDate != null) {
-            return tableStatRepository.findAllByEndDate(table, schema, endDate);
-        } else {
-            return tableStatRepository.findAllBy(table, schema);
         }
+        return tableStatRepository.findAllBy(table, schema);
     }
 
     private String getNeededValue(TableStat tableStat, QueryType queryType) {

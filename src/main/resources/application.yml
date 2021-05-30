@@ -1,3 +1,9 @@
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+
 spring:
   jpa:
     hibernate:
@@ -29,8 +35,3 @@ analyzer:
     driver-class-name: org.postgresql.Driver
 
 main-stat-job-cron-expression: "${MAIN_STAT_CRON_JOB:0 * * * * ?}"
-
-management:
-  endpoint:
-    metrics:
-      enabled: true

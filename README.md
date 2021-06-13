@@ -1,10 +1,9 @@
-# Postgres tables load analyzer
+# PostgreSQL time-series statistics collector
 
 ## Requirements
 - Java 11
 - Maven
 - PostgreSQL
-- Grafana
 
 ## Properties
 ```properties
@@ -35,6 +34,3 @@ MAIN_STAT_CRON_JOB=0/20 * * * * ?
 Для сборки проекта нужно выполнить в консоле команду `mvn clean install`<br>
 Далее надо поменять в файле `application.yml` нужные настройки и запустить сервис командой:<br>
 `java -jar target/table-analyzer-${version}.jar`, где `version` - актуальная версия сервиса, берется из значения поля `project.version` файла `pom.xml`<br>
-
-## Grafana
-Для добавления графиков в Grafana нужно подключить инстанс PostgreSQL к Grafana и импортировать список Dashboard через импорт json файла `grafana-table-analyzer.json`
